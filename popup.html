@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Turbo Download</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 340px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 16px;
+    }
+    h1 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: linear-gradient(90deg, #38bdf8, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: .3px;
+    }
+
+    /* ---- Toggle auto-interceptar ---- */
+    .autoBox {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color .15s, background .15s;
+    }
+    .autoBox:hover { border-color: #475569; }
+    .autoBox.active {
+      border-color: #38bdf8;
+      background: linear-gradient(180deg, #1e293b, #172033);
+    }
+    .switch {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      background: #334155;
+      border-radius: 10px;
+      transition: background .2s;
+      flex-shrink: 0;
+    }
+    .switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background: #94a3b8;
+      border-radius: 50%;
+      transition: transform .2s, background .2s;
+    }
+    .autoBox.active .switch { background: #38bdf8; }
+    .autoBox.active .switch::after {
+      transform: translateX(16px);
+      background: #0f172a;
+    }
+    .autoBox .txt { flex: 1; }
+    .autoBox .txt strong {
+      display: block;
+      font-size: 12px;
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+    .autoBox .txt small {
+      font-size: 10px;
+      color: #64748b;
+    }
+
+    .divider {
+      height: 1px;
+      background: #1e293b;
+      margin: 6px 0 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: #94a3b8;
+      margin: 10px 0 4px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px 10px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      color: #e2e8f0;
+      font-size: 12px;
+      outline: none;
+      transition: border-color .15s;
+    }
+    input[type="text"]:focus { border-color: #38bdf8; }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: #38bdf8;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .row strong { color: #38bdf8; font-size: 13px; }
+
+    button {
+      width: 100%;
+      margin-top: 14px;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: linear-gradient(90deg, #38bdf8, #6366f1);
+      color: #0f172a;
+      transition: opacity .15s, transform .1s;
+    }
+    button:hover:not(:disabled) { opacity: .9; }
+    button:active:not(:disabled) { transform: scale(.98); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
+    .hidden { display: none; }
+
+    #progressWrap { margin-top: 14px; }
+
+    .bar {
+      height: 8px;
+      background: #1e293b;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    #bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #a78bfa);
+      transition: width .2s;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #cbd5e1;
+      margin-top: 6px;
+    }
+    #size {
+      font-size: 10px;
+      color: #64748b;
+      margin-top: 4px;
+      text-align: center;
+    }
+    #status {
+      margin-top: 10px;
+      font-size: 12px;
+      text-align: center;
+      min-height: 16px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <h1>⚡ Turbo Download</h1>
+
+  <!-- Toggle de auto-interceptación -->
+  <div id="autoBox" class="autoBox">
+    <div class="switch"></div>
+    <div class="txt">
+      <strong>Auto-interceptar descargas</strong>
+      <small id="autoHint">Las descargas del navegador se acelerarán automáticamente</small>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <label for="url">URL del archivo</label>
+  <input id="url" type="text" placeholder="https://ejemplo.com/archivo.zip">
+
+  <label for="filename">Nombre del archivo (opcional)</label>
+  <input id="filename" type="text" placeholder="archivo.zip">
+
+  <label>Conexiones paralelas</label>
+  <div class="row">
+    <input id="connections" type="range" min="1" max="16" value="8">
+    <strong id="connVal">8</strong>
+  </div>
+
+  <button id="start">Iniciar descarga</button>
+
+  <div id="progressWrap" class="hidden">
+    <div class="bar"><div id="bar"></div></div>
+    <div class="stats">
+      <span id="pct">0%</span>
+      <span id="speed">0 B/s</span>
+    </div>
+    <div id="size"></div>
+  </div>
+
+  <div id="status"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

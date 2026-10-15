@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Turbo Download - Acelerador de Descargas",
+  "version": "1.0.0",
+  "description": "Acelera tus descargas usando múltiples conexiones paralelas con soporte de rangos HTTP (Range requests).",
+  "permissions": [
+    "downloads",
+    "storage",
+    "offscreen",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Turbo Download"
+  }
+}
